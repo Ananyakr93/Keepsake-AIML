@@ -1,0 +1,25 @@
+{
+  "source": "synthetic",
+  "intent": "planning",
+  "candidates": 20,
+  "top_five": 5,
+  "feedback": {
+    "before": {
+      "precision_at_5": 0.1875,
+      "recall_at_5": 0.9375,
+      "mrr_at_5": 0.559375,
+      "ndcg_at_5": 0.6525463742873523,
+      "candidate_recall_at_20": 1.0
+    },
+    "after": {
+      "precision_at_5": 0.17500000000000002,
+      "recall_at_5": 0.875,
+      "mrr_at_5": 0.5385416666666667,
+      "ndcg_at_5": 0.6232611333228264,
+      "candidate_recall_at_20": 1.0
+    },
+    "training_query_groups": 3,
+    "judgments": 60,
+    "useful_vote_rate": 0.05
+  }
+}

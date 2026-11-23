@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    :root { color-scheme: light; font: 13px/1.5 "Segoe UI", Arial, sans-serif; }
+    body { width: 282px; margin: 0; padding: 14px 16px 16px; border-top: 4px solid #913f2d;
+      background: #f6f3ea; color: #262d25; }
+    h1 { font: 400 20px/1.2 Georgia, serif; margin: 0 0 4px; }
+    .sub { color: #575f51; font-size: 11px; margin-bottom: 10px; }
+    .row { display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      padding: 8px 0; border-bottom: 1px solid #d8d2c5; }
+    .row span[style] { color: #575f51 !important; }
+    .toggle { cursor: pointer; font-weight: 700; min-width: 30px; text-align: center; padding: 2px 6px; }
+    .on { color: #234432; background: #dde4d7; }
+    .off { color: #753c33; background: #eee1d7; }
+    #captureStatus { color: #48564b; min-height: 19px; margin: 10px 0; }
+    input, button { box-sizing: border-box; width: 100%; border: 1px solid #c3bbad; border-radius: 3px;
+      background: #fffdf8; color: inherit; font: inherit; padding: 7px 8px; }
+    input { margin: 4px 0 6px; }
+    button { cursor: pointer; font-weight: 600; margin: 0 0 5px; }
+    button:hover { border-color: #913f2d; }
+    button:disabled { opacity: .55; cursor: default; }
+    #capture:not(:disabled) { background: #913f2d; border-color: #913f2d; color: #fffdf5; }
+    :focus-visible { outline: 2px solid #913f2d; outline-offset: 2px; }
+    .err { color: #932d24; min-height: 1.2em; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <h1>AIML-EL Memory Layer</h1>
+  <div class="sub">AIML-EL — personalized context for chatbots</div>
+
+  <div class="row">
+    <span>Tracking</span>
+    <span class="toggle" id="trackingToggle">ON</span>
+  </div>
+  <div class="row">
+    <span>Context injection</span>
+    <span class="toggle" id="injectionToggle">ON</span>
+  </div>
+  <div class="row">
+    <span>Screenshots</span>
+    <span style="color:#9ca3af">Windows App</span>
+  </div>
+
+  <p id="captureStatus" role="status"></p>
+  <form id="pair">
+    <label for="key">Extension pairing key from desktop Settings</label>
+    <input id="key" type="password" autocomplete="off" required />
+    <button type="submit">Pair extension</button>
+  </form>
+  <button id="capture">Capture this tab</button>
+  <div class="err" id="err" role="alert"></div>
+
+  <script src="client.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

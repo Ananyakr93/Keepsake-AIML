@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AIML-EL Synthetic Demo</title>
+<style>
+:root {
+  color-scheme: light;
+  --paper: #f6f3ea;
+  --sheet: #fcfaf5;
+  --ink: #262d25;
+  --muted: #575f51;
+  --rule: #d8d2c5;
+  --accent: #913f2d;
+  --sage: #e1e7dd;
+  --display: Georgia, "Times New Roman", serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.55 "Segoe UI", Arial, sans-serif; }
+main { max-width: 1160px; margin-inline: auto; }
+header { border-top: 4px solid var(--accent); border-bottom: 1px solid var(--rule); padding: 23px 0 18px; }
+h1, h2 { font-family: var(--display); font-weight: 400; letter-spacing: -.035em; }
+h1 { font-size: clamp(32px, 5vw, 62px); line-height: 1.05; margin: 0; }
+h2 { font-size: 26px; margin: 0 0 14px; }
+h3 { font-size: 15px; margin: 21px 0 6px; color: #344c3c; }
+p { margin: 6px 0 12px; }
+header p { max-width: 60ch; }
+header p, small, .note, label { color: var(--muted); }
+section { background: var(--sheet); border: 1px solid var(--rule); border-top: 2px solid #6d7d67; padding: clamp(16px, 3vw, 28px); margin-top: 16px; min-width: 0; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+@media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+label { display: block; font-weight: 600; }
+select, button { font: inherit; border: 1px solid #c3bbad; border-radius: 3px; color: inherit; background: #fffdf8; padding: 7px 10px; }
+select { width: 100%; margin: 5px 0 12px; }
+button { cursor: pointer; font-size: 13px; }
+button:hover { border-color: var(--accent); }
+button[aria-pressed=true] { background: var(--sage); color: #273b2e; border-color: #72816e; }
+button.primary { background: var(--accent); color: #fffdf5; border-color: var(--accent); }
+button:disabled { opacity: .6; cursor: wait; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+table { width: 100%; border-collapse: collapse; text-align: left; font-variant-numeric: tabular-nums; }
+th, td { border-bottom: 1px solid var(--rule); padding: 7px 8px; }
+th { color: #404d42; background: #ebede3; font-size: 13px; }
+.table { overflow: auto; }
+ul, ol { padding-left: 20px; }
+.controls { display: flex; gap: 6px; flex-wrap: wrap; }
+.candidate { border-top: 1px solid var(--rule); padding: 11px 0; }
+.candidate p { margin: 3px 0 7px; }
+summary { cursor: pointer; margin-top: 14px; color: #3b5242; text-underline-offset: 3px; }
+summary:hover { text-decoration: underline; }
+.error { color: #932d24; }
+details p:has(> span) { background: #27372e; padding: 5px 8px; }
+canvas { width: 100%; height: auto; background: #27372e; margin-top: 8px; }
+#status { min-height: 1.3em; margin: 8px 0 0; font-size: 13px; }
+
+[hidden] { display: none !important; }
+body { display: grid; grid-template-columns: 228px minmax(0, 1fr); min-height: 100vh; }
+.rail { background: #e9ebe0; border-right: 1px solid #cbd0c0; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; padding: 27px 16px 18px; }
+.brand { padding: 0 13px 20px; border-bottom: 1px solid #cbd0c0; }
+.brand strong { display: block; font: 400 27px/1.2 var(--display); }
+.brand span, .rail-note { color: #48564b; font-size: 12px; }
+nav { display: grid; gap: 2px; padding-top: 13px; }
+nav a { color: #28392e; text-decoration: none; padding: 8px 12px; font-size: 14px; }
+nav a:hover { background: #f4f6ed; }
+nav a[aria-current="page"] { background: #dce4d7; box-shadow: inset 3px 0 #465d4b; font-weight: 700; }
+.rail-note { margin-top: auto; border-top: 1px solid #cbd0c0; padding: 13px; }
+main { width: 100%; min-width: 0; padding: 21px clamp(22px, 4vw, 59px) 48px; }
+header { border-top-width: 2px; }
+#status:empty { display: none; }
+#status:not(:empty) { padding: 5px 0 9px; }
+section a { color: var(--accent); }
+.stat-strip { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); margin-top: 20px; background: var(--sheet); border-block: 1px solid var(--rule); }
+.stat { padding: 12px 16px; border-inline-start: 1px solid var(--rule); }
+.stat:first-child { border-inline-start: 0; }
+.stat strong { display: block; font: 400 32px/1.3 var(--display); }
+.narrow { max-width: 700px; }
+.list-row { border-block-start: 1px solid var(--rule); padding: 12px 0; }
+.list-row:first-child { border-block-start: 0; }
+.list-row h3 { margin: 0 0 4px; }
+.list-row p { margin: 5px 0; }
+.list-row > small { display: block; margin-top: 4px; }
+.link-button { padding: 0; border: 0; background: transparent; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; text-align: left; }
+input, textarea { font: inherit; border: 1px solid #c3bbad; border-radius: 3px; color: inherit; background: #fffdf8; padding: 7px 10px; }
+input[type="search"], textarea { width: 100%; min-width: 0; }
+textarea { min-height: 75px; }
+.search-row, .field-row { display: flex; gap: 10px; margin: 5px 0 14px; }
+.field-row > div { flex: 1; min-width: 0; }
+.inline-link { margin-inline-start: 12px; font-size: 13px; }
+@media (max-width: 700px) {
+  body { display: block; }
+  .rail { position: static; height: auto; padding: 13px; border-right: 0; border-bottom: 1px solid #cbd0c0; }
+  .brand { padding: 0 6px 8px; }
+  .brand strong, .brand span { display: inline; margin-right: 6px; }
+  nav { display: flex; flex-wrap: wrap; padding-top: 7px; }
+  nav a { padding: 5px 8px; font-size: 13px; }
+  .rail-note { display: none; }
+  .stat-strip { grid-template-columns: 1fr 1fr; }
+  .stat:nth-child(odd) { border-inline-start: 0; }
+  .stat:nth-child(n+3) { border-top: 1px solid var(--rule); }
+}
+</style>
+</head>
+<body>
+<aside class="rail">
+  <div class="brand"><strong>Keepsake</strong><span>AIML-EL</span></div>
+  <nav aria-label="Workspace">
+    <a href="#dashboard">Dashboard</a>
+    <a href="#history">Activity history</a>
+    <a href="#label">Label dataset</a>
+    <a href="#analysis-page">Session analysis</a>
+    <a href="#memories">Memories</a>
+    <a href="#recall">Recall</a>
+    <a href="#feedback">Train memories</a>
+    <a href="#evaluation">Evaluation</a>
+    <a href="#settings">Settings</a>
+  </nav>
+  <div class="rail-note">Synthetic workspace<br>Stored on this computer</div>
+</aside>
+<main>
+<p id="status" role="status" aria-live="polite">Loading workspace…</p>
+<article data-page="dashboard">
+  <header><h1>Dashboard</h1><p>Review browsing sessions, decide what is worth remembering, and see how the models perform.</p></header>
+  <div class="stat-strip" id="counts"></div>
+  <div class="grid">
+    <section><h2>Recent sessions</h2><div id="recent"></div><a href="#history">Open activity history</a></section>
+    <section><h2>Model summary</h2><div id="model-summary"></div><a href="#evaluation">See evaluation</a></section>
+  </div>
+</article>
+<article data-page="history" hidden>
+  <header><h1>Activity history</h1><p>Browse the simulated sessions and their evidence.</p></header>
+  <section><label for="history-filter">Filter by page title</label><input id="history-filter" type="search" placeholder="Search activity"><div id="history-list"></div></section>
+</article>
+<article data-page="label" hidden>
+  <header><h1>Label dataset</h1><p>Assign intent and memory-worthiness independently. Your practice labels can be exported as CSV.</p></header>
+  <section class="narrow">
+    <label for="label-session">Session</label><select id="label-session"></select>
+    <div id="label-evidence"></div>
+    <form id="label-form">
+      <div class="field-row"><div><label for="intent">Intent</label><select id="intent" required></select></div>
+      <div><label for="worthy">Worth remembering?</label><select id="worthy" required><option value="">Choose an answer</option><option value="yes">Yes</option><option value="no">No</option></select></div></div>
+      <button class="primary" type="submit">Save label</button>
+      <a class="inline-link" href="labels.csv">Export practice labels</a>
+    </form>
+  </section>
+</article>
+<article data-page="analysis-page" hidden>
+  <header><h1>Session analysis</h1><p>Inspect predicted intent, topic interests, and competing memory-admission decisions.</p></header>
+  <section><label for="session">Synthetic session</label><select id="session"></select>
+    <button class="primary" id="admit">Create memory from session</button><div id="analysis"></div>
+  </section>
+</article>
+<article data-page="memories" hidden>
+  <header><h1>Memories</h1><p>Review admitted memories, refine their wording, and archive entries you no longer need.</p></header>
+  <section><div id="memory-list"></div></section>
+</article>
+<article data-page="recall" hidden>
+  <header><h1>Recall</h1><p>Search the example memory pool and anything you have admitted from a session.</p></header>
+  <section>
+    <form id="recall-form"><label for="query">Search memories</label><div class="search-row">
+      <input required id="query" type="search" maxlength="500" placeholder="Try laptop battery life"><button class="primary">Search</button>
+    </div></form>
+    <div id="recall-results"></div>
+  </section>
+</article>
+<article data-page="feedback" hidden>
+  <header><h1>Train memories</h1><p>Judge candidate relevance, retrain the reranker, and compare held-out results.</p></header>
+  <section><h2>Retrieval feedback</h2><label for="prompt">Sample query</label><select id="prompt"></select>
+    <div class="controls"><button id="retrain" class="primary">Retrain from votes</button><button id="scripted">Use scripted feedback</button></div>
+    <p class="note">Vote on at least one useful and one irrelevant memory for the same query. The top five are marked below.</p>
+    <div id="comparison"></div><div id="candidates"></div>
+  </section>
+</article>
+<article data-page="evaluation" hidden>
+  <header><h1>Evaluation</h1><p>Compare the intent models, admission feature sets, interest models, and rerankers.</p></header>
+  <section><h2>Held-out synthetic results</h2><div id="report"></div></section>
+</article>
+<article data-page="settings" hidden>
+  <header><h1>Settings</h1><p>Choose how Recall ranks results in this synthetic workspace.</p></header>
+  <section class="narrow"><form id="settings-form"><label for="ranking">Recall ordering</label><select id="ranking">
+      <option value="vector">Vector similarity</option><option value="weighted">Fixed weights</option><option value="xgboost">Learned XGBoost reranker</option>
+    </select><button class="primary">Save settings</button></form>
+  </section>
+</article>
+</main>
+<script>
+const byId = (id) => document.getElementById(id);
+const status = byId("status");
+const pct = (value) => value == null ? "—" : (value * 100).toFixed(1) + "%";
+const number = (value) => value == null ? "—" : value.toFixed(3);
+const human = (key) => key.replaceAll("_", " ");
+let busy = false;
+let navigationPending = false;
+function el(tag, value, parent) {
+  const item = document.createElement(tag);
+  if (value != null) item.textContent = value;
+  parent?.append(item);
+  return item;
+}
+function table(parent, headers, rows) {
+  const box = el("div", null, parent);
+  box.className = "table";
+  const grid = el("table", null, box);
+  const heading = el("tr", null, el("thead", null, grid));
+  headers.forEach((value) => el("th", value, heading));
+  const body = el("tbody", null, grid);
+  for (const row of rows) {
+    const line = el("tr", null, body);
+    row.forEach((value) => el("td", value, line));
+  }
+}
+async function request(path, body) {
+  const response = await fetch(path, body == null ? undefined : {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : "Request failed");
+  return data;
+}
+async function run(work) {
+  if (busy) return;
+  busy = true;
+  status.textContent = "Working…";
+  status.className = "";
+  for (const input of document.querySelectorAll("button,select")) input.disabled = true;
+  try {
+    status.textContent = await work() || "";
+  } catch (error) {
+    status.textContent = error.message;
+    status.className = "error";
+  } finally {
+    busy = false;
+    for (const input of document.querySelectorAll("button,select")) input.disabled = false;
+    if (navigationPending && ready) {
+      navigationPending = false;
+      void run(loadPage);
+    }
+  }
+}
+async function analyze() {
+  const data = await request("sessions/" + byId("session").value);
+  const box = byId("analysis");
+  box.replaceChildren();
+  const evidence = el("details", null, box);
+  el("summary", "Session evidence", evidence);
+  const titles = el("ul", null, evidence);
+  data.page_titles.forEach((title) => el("li", title, titles));
+  const pred = data.prediction;
+  el("h3", "Predicted intent · " + pred.intent, box);
+  el("p", "Fixture label · " + data.fixture_labels.intent +
+      " · Worth remembering " + (data.fixture_labels.memory_worthy ? "yes" : "no"), box);
+  const detail = el("details", null, box);
+  el("summary", "All intent probabilities", detail);
+  table(detail, ["Intent", "Probability"], Object.entries(pred.intent_probabilities)
+    .sort((a,b) => b[1] - a[1]).map(([key,value]) => [key,pct(value)]));
+  el("h3", "Memory admission", box);
+  table(box, ["Model", "Score", "Threshold", "Decision"],
+    [["Rule", "—", "—", pred.rule ? "Remember" : "Skip"],
+     ["Always remember", "—", "—", "Remember"],
+     ...Object.entries(pred.admission).map(([key,value]) => [human(key) + (key === pred.selected ? " (selected)" : ""),
+       pct(value.probability), pct(value.threshold), value.remember ? "Remember" : "Skip"])]);
+  el("h3", "Current interests", box);
+  table(box, ["Topic", "Time-decayed", "Learned"], data.interests.map((x) => [x.topic,pct(x.baseline),pct(x.learned)]));
+  showTrend(box, data.trends);
+  el("h3", "Memory preview", box);
+  el("p", data.memory ?? "The selected admission model skipped this session.", box);
+  if (data.recall) {
+    el("p", data.recall.admitted_rank ? "New memory ranked #" + data.recall.admitted_rank :
+        "New memory was outside the top five.", box);
+    const list = el("ol", null, box);
+    data.recall.context.forEach((text) => el("li", text, list));
+  }
+}
+function showTrend(box, samples) {
+  if (!samples.length) return;
+  const details = el("details", null, box);
+  el("summary", "Interests over the last eight days", details);
+  const canvas = el("canvas", null, details);
+  canvas.width = 600;
+  canvas.height = 180;
+  canvas.setAttribute("aria-label", "Time-decayed topic scores. Values appear in the table below.");
+  const topics = Object.keys(samples[0].scores);
+  const colors = ["#c7ed86", "#93c5fd", "#f9a8d4"];
+  const ctx = canvas.getContext("2d");
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "#545d70";
+  for (const y of [20, 90, 160]) {
+    ctx.beginPath();
+    ctx.moveTo(18, y);
+    ctx.lineTo(582, y);
+    ctx.stroke();
+  }
+  topics.forEach((topic, i) => {
+    ctx.strokeStyle = colors[i];
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    samples.forEach((sample, j) => {
+      const x = 18 + j * 564 / (samples.length - 1);
+      const y = 160 - 140 * sample.scores[topic];
+      j === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  });
+  const legend = el("p", null, details);
+  topics.forEach((topic, i) => { el("span", (i ? " · " : "") + topic, legend).style.color = colors[i]; });
+  table(details, ["Day (UTC)", ...topics], samples.map((sample) =>
+    [sample.date, ...topics.map((topic) => pct(sample.scores[topic]))]));
+}
+function showComparison(data) {
+  const box = byId("comparison");
+  box.replaceChildren();
+  if (!data) return;
+  el("h3", "Feedback evaluation", box);
+  el("p", data.training_query_groups + " feedback query groups" + (data.judgments == null ? "" :
+    " · " + data.judgments + " judgments · " + pct(data.useful_vote_rate) + " useful votes"), box);
+  table(box, ["Held-out metric", "Before", "After"], Object.keys(data.before).map((key) =>
+    [human(key),number(data.before[key]),number(data.after[key])]));
+}
+async function retrieve() {
+  const id = byId("prompt").value;
+  const data = await request("prompts/" + id);
+  const box = byId("candidates");
+  box.replaceChildren();
+  showComparison(data.comparison);
+  const more = el("details", null, box);
+  el("summary", "Other candidates", more);
+  const rest = el("div", null, more);
+  for (const [index,row] of data.candidates.entries()) {
+    const item = el("article", null, row.top_five ? box : rest);
+    item.className = "candidate";
+    el("small", "#" + (index + 1) + (row.top_five ? " · Top five" : "") + " · Vector similarity " + number(row.similarity), item);
+    el("p", row.content, item);
+    const buttons = el("div", null, item);
+    buttons.className = "controls";
+    for (const [value,label] of [[1,"Useful"],[0,"Irrelevant"]]) {
+      const button = el("button", label, buttons);
+      button.type = "button";
+      button.setAttribute("aria-pressed", row.vote === value);
+      button.onclick = () => run(async () => {
+        await request("votes", {prompt:id,memory:row.id,vote:row.vote === value ? null : value});
+        await retrieve();
+        if (!row.top_five) byId("candidates").querySelector("details").open = true;
+        return "Vote saved.";
+      });
+    }
+  }
+  box.append(more);
+}
+function report(data) {
+  const box = byId("report");
+  el("p", data.source + " · " + data.split.replaceAll("_"," ") + " · " + data.retrieval.queries + " retrieval test queries", box);
+  el("h3", "Intent classification", box);
+  table(box, ["Model", "Validation macro F1"], Object.entries(data.intent.validation).map(([key,value]) => [human(key),number(value.f1)]));
+  const test = data.intent.test;
+  el("p", human(data.intent.selected) + " selected · Test F1 " + number(test.f1) + " · Accuracy " + pct(test.accuracy), box);
+  const cm = el("details", null, box);
+  el("summary", "Intent confusion matrix", cm);
+  table(cm, ["Actual / predicted", ...data.intent.labels], test.confusion_matrix.map((row,i) => [data.intent.labels[i], ...row]));
+  el("h3", "Admission", box);
+  table(box, ["Variant", "Precision", "Recall", "F1", "ROC-AUC"], Object.entries(data.admission.variants).map(([key,value]) =>
+    [human(key), ...["precision","recall","f1","roc_auc"].map((metric) => number(value.test[metric]))]));
+  el("h3", "Interest prediction", box);
+  table(box, ["Model", "F1", "ROC-AUC"], ["exponential","learned"].filter((key) => data.interests[key]).map((key) =>
+    [human(key), number(data.interests[key].f1), number(data.interests[key].roc_auc)]));
+  el("h3", "Retrieval", box);
+  table(box, ["Method", "P@5", "R@5", "MRR@5", "NDCG@5", "Candidate recall@20"], Object.entries(data.retrieval.methods)
+    .map(([key,value]) => [human(key), ...["precision_at_5","recall_at_5","mrr_at_5","ndcg_at_5","candidate_recall_at_20"].map((metric) => number(value[metric]))]));
+}
+byId("session").onchange = () => run(analyze);
+byId("prompt").onchange = () => run(retrieve);
+for (const id of ["retrain", "scripted"]) {
+  byId(id).onclick = () => run(async () => {
+    await request("retrain", {scripted:id === "scripted"});
+    await retrieve();
+    return "Reranker updated.";
+  });
+}
+const intents = ["research", "learning", "purchase", "planning", "entertainment", "casual", "task"];
+let activity = {sessions: []};
+const formatTime = (stamp) => new Intl.DateTimeFormat(undefined, {dateStyle:"medium", timeStyle:"short"}).format(new Date(stamp));
+
+function openSession(id) {
+  byId("session").value = id;
+  if (location.hash === "#analysis-page") run(analyze);
+  else location.hash = "analysis-page";
+}
+
+function sessionList(box, rows) {
+  box.replaceChildren();
+  if (!rows.length) el("p", "No sessions match this filter.", box);
+  for (const row of rows) {
+    const item = el("div", null, box);
+    item.className = "list-row";
+    const link = el("button", row.title, item);
+    link.className = "link-button";
+    link.onclick = () => openSession(row.id);
+    el("small", formatTime(row.started_at) + " · " + row.dwell_sec + "s dwell · " +
+      row.visit_count + " visits · " + (row.label ? row.label.intent : "unlabeled"), item);
+  }
+}
+
+function renderHistory() {
+  const text = byId("history-filter").value.trim().toLowerCase();
+  sessionList(byId("history-list"), activity.sessions.filter((row) => row.title.toLowerCase().includes(text)));
+}
+
+async function refreshActivity() {
+  activity = await request("activity");
+  const counts = byId("counts");
+  counts.replaceChildren();
+  for (const [label, value] of [["Sessions", activity.sessions.length], ["Practice labels", activity.reviewed],
+      ["Active memories", activity.memories], ["Relevance votes", activity.votes]]) {
+    const block = el("div", null, counts);
+    block.className = "stat";
+    el("small", label, block);
+    el("strong", value, block);
+  }
+  sessionList(byId("recent"), activity.sessions.slice(-4).reverse());
+  renderHistory();
+}
+
+function fillLabel() {
+  const id = byId("label-session").value;
+  const row = activity.sessions.find((x) => x.id === id);
+  if (!row) return;
+  byId("intent").value = row.label?.intent || "";
+  byId("worthy").value = row.label ? (row.label.memory_worthy ? "yes" : "no") : "";
+  const evidence = byId("label-evidence");
+  evidence.replaceChildren();
+  el("p", row.dwell_sec + "s dwell · " + row.visit_count + " visits · " +
+    row.screenshot_count + " simulated visual observations", evidence);
+  const titles = el("ul", null, evidence);
+  for (const title of row.page_titles) el("li", title, titles);
+}
+
+async function showMemories() {
+  const rows = await request("memories");
+  const box = byId("memory-list");
+  box.replaceChildren();
+  if (!rows.length) {
+    el("p", "Create a memory from Session analysis to begin.", box);
+    const link = el("a", "Open session analysis", box);
+    link.href = "#analysis-page";
+  }
+  for (const row of rows) {
+    const item = el("div", null, box);
+    item.className = "list-row";
+    el("small", (row.archived ? "Archived" : "Active") + " · admission score " + pct(row.importance), item);
+    const note = el("textarea", null, item);
+    note.setAttribute("aria-label", "Memory text");
+    note.value = row.content;
+    note.maxLength = 2000;
+    const controls = el("div", null, item);
+    controls.className = "controls";
+    el("button", "Save text", controls).onclick = () => run(async () => {
+      await request("memories/" + row.id, {content:note.value.trim()});
+      return "Memory updated.";
+    });
+    el("button", row.archived ? "Restore" : "Archive", controls).onclick = () => run(async () => {
+      await request("memories/" + row.id, {archived:!row.archived});
+      await showMemories();
+      return row.archived ? "Memory restored." : "Memory archived.";
+    });
+    el("button", "View source session", controls).onclick = () => openSession(row.session);
+  }
+}
+
+async function recall(query) {
+  const result = await request("recall", {query});
+  const box = byId("recall-results");
+  box.replaceChildren();
+  el("p", result.candidate_count + " matching candidates · " + human(result.ranking), box);
+  if (!result.results.length) el("p", "Try a different search, or admit a session to add a memory.", box);
+  for (const [index, row] of result.results.entries()) {
+    const item = el("div", null, box);
+    item.className = "list-row";
+    el("small", "#" + (index+1) + (row.similarity > 0 ?
+      " · vector similarity " + number(row.similarity) : " · exact word match"), item);
+    el("p", row.content, item);
+    if (row.session) {
+      const open = el("button", "View source session", item);
+      open.className = "link-button";
+      open.onclick = () => openSession(row.session);
+    }
+  }
+}
+
+byId("history-filter").oninput = renderHistory;
+byId("label-session").onchange = fillLabel;
+byId("label-form").onsubmit = (event) => {
+  event.preventDefault();
+  run(async () => {
+    await request("sessions/" + byId("label-session").value + "/label",
+      {intent:byId("intent").value,memory_worthy:byId("worthy").value === "yes"});
+    await refreshActivity();
+    return "Practice label saved.";
+  });
+};
+byId("admit").onclick = () => run(async () => {
+  await request("sessions/" + byId("session").value + "/admit", {});
+  await refreshActivity();
+  return "Memory saved. Open Memories or search in Recall.";
+});
+byId("recall-form").onsubmit = (event) => {
+  event.preventDefault();
+  run(() => recall(byId("query").value.trim()));
+};
+byId("settings-form").onsubmit = (event) => {
+  event.preventDefault();
+  run(async () => {
+    await request("preferences", {ranking:byId("ranking").value});
+    return "Recall preference saved.";
+  });
+};
+
+const pages = [...document.querySelectorAll("[data-page]")];
+function route() {
+  const requested = location.hash.slice(1);
+  const active = pages.find((page) => page.dataset.page === requested) || pages[0];
+  for (const page of pages) page.hidden = page !== active;
+  for (const link of document.querySelectorAll("nav a")) {
+    if (link.hash === "#" + active.dataset.page) link.setAttribute("aria-current","page");
+    else link.removeAttribute("aria-current");
+  }
+  return active.dataset.page;
+}
+
+async function loadPage() {
+  const page = route();
+  if (["dashboard","history","label"].includes(page)) await refreshActivity();
+  if (page === "label") fillLabel();
+  if (page === "analysis-page") await analyze();
+  if (page === "memories") await showMemories();
+  if (page === "recall" && byId("query").value.trim()) await recall(byId("query").value.trim());
+  if (page === "feedback") await retrieve();
+  if (page === "settings") byId("ranking").value = (await request("preferences")).ranking;
+}
+
+let ready = false;
+route();
+window.addEventListener("hashchange", () => {
+  route();
+  window.scrollTo(0, 0);
+  if (!ready || busy) navigationPending = true;
+  else run(loadPage);
+});
+run(async () => {
+  const data = await request("state");
+  for (const [id,entries,key] of [["session",data.sessions,"title"],["label-session",data.sessions,"title"],["prompt",data.prompts,"query"]]) {
+    for (const entry of entries) el("option", entry[key], byId(id)).value = entry.id;
+  }
+  el("option", "Choose an intent", byId("intent")).value = "";
+  for (const name of intents) el("option", name[0].toUpperCase() + name.slice(1), byId("intent")).value = name;
+  report(data.report);
+  table(byId("model-summary"), ["Experiment", "Result"], [
+    ["Intent macro F1",number(data.report.intent.test.f1)],
+    ["Selected admission",human(data.report.admission.selected)],
+    ["XGBoost NDCG@5",number(data.report.retrieval.methods.xgboost.ndcg_at_5)]
+  ]);
+  await loadPage();
+  ready = true;
+});
+</script>
+</body>
+</html>
